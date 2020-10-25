@@ -39,7 +39,7 @@ lint:
 test:
     extends: .go-test
     after_script:
-        - bash <(curl -Ls https://coverage.codacy.com/get.sh) report
+        - bash <(wget -qO- https://coverage.codacy.com/get.sh) report
 
 pages:
     extends: .go-doc
