@@ -6,8 +6,8 @@ The Go Patterns implements some useful generic design patterns like object regis
 
 ## Features
 
-* It implements object registry design pattern
-* It implements object factory design pattern
+*   It implements object registry design pattern
+*   It implements object factory design pattern
 
 ## Usage
 

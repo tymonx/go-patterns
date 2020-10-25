@@ -42,6 +42,10 @@ func (f *Factory) Create(name string, arguments ...interface{}) (object interfac
 		return nil, err
 	}
 
+	if constructor == nil {
+		return nil, rterror.New("constructor cannot be nil", name)
+	}
+
 	if object, err = constructor(arguments...); err != nil {
 		return nil, rterror.New("cannot create object", name, err)
 	}
@@ -63,7 +67,6 @@ func (f *Factory) Creates(names []string, arguments ...interface{}) (objects []i
 
 		if object, err = f.Create(name, arguments...); err != nil {
 			errs = append(errs, err)
-
 			continue
 		}
 
@@ -79,56 +82,24 @@ func (f *Factory) Creates(names []string, arguments ...interface{}) (objects []i
 
 // Add adds an object constructor with a given unique id to registry.
 func (f *Factory) Add(name string, constructor Constructor) error {
-	if constructor == nil {
-		return rterror.New("object constructor cannot be nil", name)
-	}
-
 	return f.registry.Add(name, constructor)
 }
 
 // Adds adds new object constructors with given unique ids to registry.
 func (f *Factory) Adds(constructors Constructors) error {
-	errs := make([]interface{}, 0, len(constructors))
-
-	for name, constructor := range constructors {
-		if err := f.Add(name, constructor); err != nil {
-			errs = append(errs, err)
-		}
-	}
-
-	if len(errs) != 0 {
-		return rterror.New("cannot add object constructors", errs...)
-	}
-
-	return nil
+	return f.registry.Adds(toObjects(constructors))
 }
 
 // Set sets an object constructor with a given unique id to registry.
-func (f *Factory) Set(name string, constructor Constructor) error {
-	if constructor == nil {
-		return rterror.New("object constructor cannot be nil", name)
-	}
-
+func (f *Factory) Set(name string, constructor Constructor) *Factory {
 	f.registry.Set(name, constructor)
-
-	return nil
+	return f
 }
 
 // Sets sets object constructors with given unique ids to registry.
-func (f *Factory) Sets(constructors Constructors) error {
-	errs := make([]interface{}, 0, len(constructors))
-
-	for name, constructor := range constructors {
-		if err := f.Set(name, constructor); err != nil {
-			errs = append(errs, err)
-		}
-	}
-
-	if len(errs) != 0 {
-		return rterror.New("cannot set object constructors", errs...)
-	}
-
-	return nil
+func (f *Factory) Sets(constructors Constructors) *Factory {
+	f.registry.Sets(toObjects(constructors))
+	return f
 }
 
 // Get returns registered object constructor by given name.
@@ -139,13 +110,12 @@ func (f *Factory) Get(name string) (constructor Constructor, err error) {
 		return nil, err
 	}
 
-	return object.(Constructor), nil
+	return toConstructor(object), nil
 }
 
 // Gets returns registered object constructors by given names.
 func (f *Factory) Gets(names []string) (Constructors, error) {
 	objects, err := f.registry.Gets(names)
-
 	return toConstructors(objects), err
 }
 
@@ -192,16 +162,26 @@ func (f *Factory) Size() int {
 	return f.registry.Size()
 }
 
+func toConstructor(object interface{}) Constructor {
+	return object.(Constructor)
+}
+
 func toConstructors(objects registry.Objects) Constructors {
 	constructors := Constructors{}
 
 	for name, object := range objects {
-		var ok bool
-
-		if constructors[name], ok = object.(Constructor); !ok {
-			panic("object is not a Constructor type")
-		}
+		constructors[name] = toConstructor(object)
 	}
 
 	return constructors
+}
+
+func toObjects(constructors Constructors) registry.Objects {
+	objects := registry.Objects{}
+
+	for name, constructor := range constructors {
+		objects[name] = constructor
+	}
+
+	return objects
 }

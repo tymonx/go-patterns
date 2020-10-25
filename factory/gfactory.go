@@ -61,21 +61,17 @@ func Adds(constructors Constructors) (err error) {
 }
 
 // Set sets an constructor with a given unique id to factory.
-func Set(name string, constructor Constructor) (err error) {
+func Set(name string, constructor Constructor) {
 	gGuard.Write(func() {
-		err = getInstance().Set(name, constructor)
+		getInstance().Set(name, constructor)
 	})
-
-	return err
 }
 
 // Sets sets constructors with given unique ids to factory.
-func Sets(constructors Constructors) (err error) {
+func Sets(constructors Constructors) {
 	gGuard.Write(func() {
-		err = getInstance().Sets(constructors)
+		getInstance().Sets(constructors)
 	})
-
-	return err
 }
 
 // Get returns registered constructor by given name.

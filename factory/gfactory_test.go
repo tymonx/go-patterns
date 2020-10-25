@@ -106,8 +106,9 @@ func TestGlobalFactoryAdd(test *testing.T) {
 func TestGlobalFactoryAddError(test *testing.T) {
 	defer factory.RemoveAll()
 
-	assert.Error(test, factory.Add("constructor", nil))
-	assert.Empty(test, factory.GetAll())
+	assert.NoError(test, factory.Add("constructor", Constructor))
+	assert.Error(test, factory.Add("constructor", Constructor))
+	assert.Len(test, factory.GetAll(), 1)
 }
 
 func TestGlobalFactoryAdds(test *testing.T) {
@@ -133,38 +134,20 @@ func TestGlobalFactoryAddsError(test *testing.T) {
 func TestGlobalFactorySet(test *testing.T) {
 	defer factory.RemoveAll()
 
-	assert.NoError(test, factory.Set("constructor", Constructor))
-	assert.NoError(test, factory.Set("constructor", Constructor))
+	factory.Set("constructor", Constructor)
+	factory.Set("constructor", Constructor)
 	assert.Len(test, factory.GetAll(), 1)
-}
-
-func TestGlobalFactorySetError(test *testing.T) {
-	defer factory.RemoveAll()
-
-	assert.Error(test, factory.Set("constructor", nil))
-	assert.Empty(test, factory.GetAll())
 }
 
 func TestGlobalFactorySets(test *testing.T) {
 	defer factory.RemoveAll()
 
-	assert.NoError(test, factory.Sets(factory.Constructors{
+	factory.Sets(factory.Constructors{
 		"constructorA": Constructor,
 		"constructorB": Constructor,
-	}))
+	})
 
 	assert.Len(test, factory.GetAll(), 2)
-}
-
-func TestGlobalFactorySetsError(test *testing.T) {
-	defer factory.RemoveAll()
-
-	assert.Error(test, factory.Sets(factory.Constructors{
-		"constructorA": nil,
-		"constructorB": Constructor,
-	}))
-
-	assert.Len(test, factory.GetAll(), 1)
 }
 
 func TestGlobalFactoryIsExist(test *testing.T) {

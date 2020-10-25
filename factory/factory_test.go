@@ -39,6 +39,17 @@ func TestFactoryCreate(test *testing.T) {
 	assert.NotNil(test, object)
 }
 
+func TestFactoryCreateNoConstructor(test *testing.T) {
+	f := factory.New()
+
+	assert.NoError(test, f.Add("constructor", nil))
+
+	object, err := f.Create("constructor")
+
+	assert.Error(test, err)
+	assert.Nil(test, object)
+}
+
 func TestFactoryCreateNoExist(test *testing.T) {
 	f := factory.New()
 
@@ -113,8 +124,9 @@ func TestFactoryAdd(test *testing.T) {
 func TestFactoryAddError(test *testing.T) {
 	f := factory.New()
 
-	assert.Error(test, f.Add("constructor", nil))
-	assert.Empty(test, f.GetAll())
+	assert.NoError(test, f.Add("constructor", Constructor))
+	assert.Error(test, f.Add("constructor", Constructor))
+	assert.Len(test, f.GetAll(), 1)
 }
 
 func TestFactoryAdds(test *testing.T) {
@@ -140,38 +152,20 @@ func TestFactoryAddsError(test *testing.T) {
 func TestFactorySet(test *testing.T) {
 	f := factory.New()
 
-	assert.NoError(test, f.Set("constructor", Constructor))
-	assert.NoError(test, f.Set("constructor", Constructor))
+	assert.Same(test, f, f.Set("constructor", Constructor))
+	assert.Same(test, f, f.Set("constructor", Constructor))
 	assert.Len(test, f.GetAll(), 1)
-}
-
-func TestFactorySetError(test *testing.T) {
-	f := factory.New()
-
-	assert.Error(test, f.Set("constructor", nil))
-	assert.Empty(test, f.GetAll())
 }
 
 func TestFactorySets(test *testing.T) {
 	f := factory.New()
 
-	assert.NoError(test, f.Sets(factory.Constructors{
+	assert.Same(test, f, f.Sets(factory.Constructors{
 		"constructorA": Constructor,
 		"constructorB": Constructor,
 	}))
 
 	assert.Len(test, f.GetAll(), 2)
-}
-
-func TestFactorySetsError(test *testing.T) {
-	f := factory.New()
-
-	assert.Error(test, f.Sets(factory.Constructors{
-		"constructorA": nil,
-		"constructorB": Constructor,
-	}))
-
-	assert.Len(test, f.GetAll(), 1)
 }
 
 func TestFactoryIsExist(test *testing.T) {
