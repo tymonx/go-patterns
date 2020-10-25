@@ -40,6 +40,7 @@ test:
     extends: .go-test
     after_script:
         - bash <(wget -qO- https://coverage.codacy.com/get.sh) report
+        - bash <(wget -qO- https://codecov.io/bash)
 
 pages:
     extends: .go-doc
