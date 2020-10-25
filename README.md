@@ -22,3 +22,9 @@ Import the `factory` package:
 ```go
 import "gitlab.com/tymonx/go-patterns/factory"
 ```
+
+Import the `guard` package:
+
+```go
+import "gitlab.com/tymonx/go-patterns/guard"
+```

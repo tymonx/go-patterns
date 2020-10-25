@@ -16,122 +16,128 @@ package registry
 
 import (
 	"sync"
+
+	"gitlab.com/tymonx/go-patterns/guard"
 )
 
 var gInstance *Registry // nolint: gochecknoglobals
-var gMutex sync.RWMutex // nolint: gochecknoglobals
+var gGuard guard.Guard  // nolint: gochecknoglobals
 var gOnce sync.Once     // nolint: gochecknoglobals
 
 // Add adds a new object with a given unique id to registry.
-func Add(name string, object interface{}) error {
-	gMutex.Lock()
-	defer gMutex.Unlock()
+func Add(name string, object interface{}) (err error) {
+	gGuard.Write(func() {
+		err = getInstance().Add(name, object)
+	})
 
-	return getInstance().Add(name, object)
+	return err
 }
 
 // Adds adds new objects with given unique ids to registry.
-func Adds(objects Objects) error {
-	gMutex.Lock()
-	defer gMutex.Unlock()
+func Adds(objects Objects) (err error) {
+	gGuard.Write(func() {
+		err = getInstance().Adds(objects)
+	})
 
-	return getInstance().Adds(objects)
+	return err
 }
 
 // Set sets an object with a given unique id to registry.
 func Set(name string, object interface{}) {
-	gMutex.Lock()
-	defer gMutex.Unlock()
-
-	getInstance().Set(name, object)
+	gGuard.Write(func() {
+		getInstance().Set(name, object)
+	})
 }
 
 // Sets sets objects with given unique ids to registry.
 func Sets(objects Objects) {
-	gMutex.Lock()
-	defer gMutex.Unlock()
-
-	getInstance().Sets(objects)
+	gGuard.Write(func() {
+		getInstance().Sets(objects)
+	})
 }
 
 // Get returns registered object by given name.
 func Get(name string) (object interface{}, err error) {
-	gMutex.RLock()
-	defer gMutex.RUnlock()
+	gGuard.Read(func() {
+		object, err = getInstance().Get(name)
+	})
 
-	return getInstance().Get(name)
+	return object, err
 }
 
 // Gets returns registered objects by given names.
 func Gets(names []string) (objects Objects, err error) {
-	gMutex.RLock()
-	defer gMutex.RUnlock()
+	gGuard.Read(func() {
+		objects, err = getInstance().Gets(names)
+	})
 
-	return getInstance().Gets(names)
+	return objects, err
 }
 
 // GetAll returns all registered objects.
-func GetAll() Objects {
-	gMutex.RLock()
-	defer gMutex.RUnlock()
+func GetAll() (objects Objects) {
+	gGuard.Read(func() {
+		objects = getInstance().GetAll()
+	})
 
-	return getInstance().GetAll()
+	return objects
 }
 
 // Remove removes registered object.
 func Remove(name string) {
-	gMutex.Lock()
-	defer gMutex.Unlock()
-
-	getInstance().Remove(name)
+	gGuard.Write(func() {
+		getInstance().Remove(name)
+	})
 }
 
 // Removes removes registered object.
 func Removes(names []string) {
-	gMutex.Lock()
-	defer gMutex.Unlock()
-
-	getInstance().Removes(names)
+	gGuard.Write(func() {
+		getInstance().Removes(names)
+	})
 }
 
 // RemoveAll removes all registered object.
 func RemoveAll() {
-	gMutex.Lock()
-	defer gMutex.Unlock()
-
-	getInstance().RemoveAll()
+	gGuard.Write(func() {
+		getInstance().RemoveAll()
+	})
 }
 
 // IsExist returns true if object with given name was registered, otherwise it returns false.
-func IsExist(name string) bool {
-	gMutex.RLock()
-	defer gMutex.RUnlock()
+func IsExist(name string) (value bool) {
+	gGuard.Read(func() {
+		value = getInstance().IsExist(name)
+	})
 
-	return getInstance().IsExist(name)
+	return value
 }
 
 // IsExists returns true if all objects with given names were registered, otherwise it returns false.
-func IsExists(names []string) bool {
-	gMutex.RLock()
-	defer gMutex.RUnlock()
+func IsExists(names []string) (value bool) {
+	gGuard.Read(func() {
+		value = getInstance().IsExists(names)
+	})
 
-	return getInstance().IsExists(names)
+	return value
 }
 
 // IsEmpty returns true if there are no registered objects, otherwise it returns false.
-func IsEmpty() bool {
-	gMutex.RLock()
-	defer gMutex.RUnlock()
+func IsEmpty() (value bool) {
+	gGuard.Read(func() {
+		value = getInstance().IsEmpty()
+	})
 
-	return getInstance().IsEmpty()
+	return value
 }
 
 // Size returns number of registered objects.
-func Size() int {
-	gMutex.RLock()
-	defer gMutex.RUnlock()
+func Size() (value int) {
+	gGuard.Read(func() {
+		value = getInstance().Size()
+	})
 
-	return getInstance().Size()
+	return value
 }
 
 // getInstance returns global registry instance.

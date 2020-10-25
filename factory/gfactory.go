@@ -16,138 +16,150 @@ package factory
 
 import (
 	"sync"
+
+	"gitlab.com/tymonx/go-patterns/guard"
 )
 
-var gInstance *Factory  // nolint: gochecknoglobals
-var gMutex sync.RWMutex // nolint: gochecknoglobals
-var gOnce sync.Once     // nolint: gochecknoglobals
+var gInstance *Factory // nolint: gochecknoglobals
+var gGuard guard.Guard // nolint: gochecknoglobals
+var gOnce sync.Once    // nolint: gochecknoglobals
 
 // Create creates a new object based on given name.
 func Create(name string, arguments ...interface{}) (object interface{}, err error) {
-	gMutex.RLock()
-	defer gMutex.RUnlock()
+	gGuard.Read(func() {
+		object, err = getInstance().Create(name, arguments...)
+	})
 
-	return getInstance().Create(name, arguments...)
+	return object, err
 }
 
 // Creates creates a list of new objects based on given names.
 func Creates(names []string, arguments ...interface{}) (objects []interface{}, err error) {
-	gMutex.RLock()
-	defer gMutex.RUnlock()
+	gGuard.Read(func() {
+		objects, err = getInstance().Creates(names, arguments...)
+	})
 
-	return getInstance().Creates(names, arguments...)
+	return objects, err
 }
 
 // Add adds a new constructor with a given unique id to factory.
-func Add(name string, constructor Constructor) error {
-	gMutex.Lock()
-	defer gMutex.Unlock()
+func Add(name string, constructor Constructor) (err error) {
+	gGuard.Write(func() {
+		err = getInstance().Add(name, constructor)
+	})
 
-	return getInstance().Add(name, constructor)
+	return err
 }
 
 // Adds adds new constructors with given unique ids to factory.
-func Adds(constructors Constructors) error {
-	gMutex.Lock()
-	defer gMutex.Unlock()
+func Adds(constructors Constructors) (err error) {
+	gGuard.Write(func() {
+		err = getInstance().Adds(constructors)
+	})
 
-	return getInstance().Adds(constructors)
+	return err
 }
 
 // Set sets an constructor with a given unique id to factory.
-func Set(name string, constructor Constructor) error {
-	gMutex.Lock()
-	defer gMutex.Unlock()
+func Set(name string, constructor Constructor) (err error) {
+	gGuard.Write(func() {
+		err = getInstance().Set(name, constructor)
+	})
 
-	return getInstance().Set(name, constructor)
+	return err
 }
 
 // Sets sets constructors with given unique ids to factory.
-func Sets(constructors Constructors) error {
-	gMutex.Lock()
-	defer gMutex.Unlock()
+func Sets(constructors Constructors) (err error) {
+	gGuard.Write(func() {
+		err = getInstance().Sets(constructors)
+	})
 
-	return getInstance().Sets(constructors)
+	return err
 }
 
 // Get returns registered constructor by given name.
 func Get(name string) (constructor Constructor, err error) {
-	gMutex.RLock()
-	defer gMutex.RUnlock()
+	gGuard.Read(func() {
+		constructor, err = getInstance().Get(name)
+	})
 
-	return getInstance().Get(name)
+	return constructor, err
 }
 
 // Gets returns registered constructors by given names.
 func Gets(names []string) (constructors Constructors, err error) {
-	gMutex.RLock()
-	defer gMutex.RUnlock()
+	gGuard.Read(func() {
+		constructors, err = getInstance().Gets(names)
+	})
 
-	return getInstance().Gets(names)
+	return constructors, err
 }
 
 // GetAll returns all registered constructors.
-func GetAll() Constructors {
-	gMutex.RLock()
-	defer gMutex.RUnlock()
+func GetAll() (constructors Constructors) {
+	gGuard.Read(func() {
+		constructors = getInstance().GetAll()
+	})
 
-	return getInstance().GetAll()
+	return constructors
 }
 
 // Remove removes registered constructor.
 func Remove(name string) {
-	gMutex.Lock()
-	defer gMutex.Unlock()
-
-	getInstance().Remove(name)
+	gGuard.Write(func() {
+		getInstance().Remove(name)
+	})
 }
 
 // Removes removes registered constructor.
 func Removes(names []string) {
-	gMutex.Lock()
-	defer gMutex.Unlock()
-
-	getInstance().Removes(names)
+	gGuard.Write(func() {
+		getInstance().Removes(names)
+	})
 }
 
 // RemoveAll removes all registered constructor.
 func RemoveAll() {
-	gMutex.Lock()
-	defer gMutex.Unlock()
-
-	getInstance().RemoveAll()
+	gGuard.Write(func() {
+		getInstance().RemoveAll()
+	})
 }
 
 // IsExist returns true if constructor with given name was registered, otherwise it returns false.
-func IsExist(name string) bool {
-	gMutex.RLock()
-	defer gMutex.RUnlock()
+func IsExist(name string) (value bool) {
+	gGuard.Read(func() {
+		value = getInstance().IsExist(name)
+	})
 
-	return getInstance().IsExist(name)
+	return value
 }
 
 // IsExists returns true if all object constructors with given names were registered, otherwise it returns false.
-func IsExists(names []string) bool {
-	gMutex.RLock()
-	defer gMutex.RUnlock()
+func IsExists(names []string) (value bool) {
+	gGuard.Read(func() {
+		value = getInstance().IsExists(names)
+	})
 
-	return getInstance().IsExists(names)
+	return value
 }
 
 // IsEmpty returns true if there are no registered object constructors, otherwise it returns false.
-func IsEmpty() bool {
-	gMutex.RLock()
-	defer gMutex.RUnlock()
+func IsEmpty() (value bool) {
+	gGuard.Read(func() {
+		value = getInstance().IsEmpty()
+	})
 
-	return getInstance().IsEmpty()
+	return value
 }
 
 // Size returns number of registered object constructors.
-func Size() int {
-	gMutex.RLock()
-	defer gMutex.RUnlock()
+func Size() (value int) {
+	gGuard.Read(func() {
+		value = getInstance().Size()
+	})
 
-	return getInstance().Size()
+	return value
 }
 
 // getInstance returns global factory instance.
