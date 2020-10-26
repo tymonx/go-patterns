@@ -17,6 +17,7 @@ module gitlab.com/tymonx/go-patterns
 go 1.14
 
 require (
+	github.com/mattn/goveralls v0.0.7 // indirect
 	github.com/stretchr/testify v1.6.1
 	gitlab.com/tymonx/go-error v1.1.0
 )
