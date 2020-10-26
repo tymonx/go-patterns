@@ -43,7 +43,7 @@ test:
         - go get github.com/mattn/goveralls
         - bash <(wget -qO- https://coverage.codacy.com/get.sh) report
         - bash <(wget -qO- https://codecov.io/bash)
-        - goveralls -coverprofile=coverage.out -service=travis-ci
+        - goveralls -coverprofile=coverage.out -service=gitlab-ci
 
 pages:
     extends: .go-doc
