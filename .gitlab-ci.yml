@@ -39,6 +39,7 @@ lint:
 test:
     extends: .go-test
     after_script:
+        - apk add curl
         - bash <(wget -qO- https://coverage.codacy.com/get.sh) report
         - bash <(wget -qO- https://codecov.io/bash)
 
