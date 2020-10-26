@@ -40,8 +40,10 @@ test:
     extends: .go-test
     after_script:
         - apk add curl
+        - go get github.com/mattn/goveralls
         - bash <(wget -qO- https://coverage.codacy.com/get.sh) report
         - bash <(wget -qO- https://codecov.io/bash)
+        - goveralls -coverprofile=coverage.out -service=travis-ci
 
 pages:
     extends: .go-doc
